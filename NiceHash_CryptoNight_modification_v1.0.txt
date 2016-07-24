@@ -1,0 +1,94 @@
+-------------------------------------------------------------------------
+			   NiceHash presents
+=========================================================================
+		CryptoNight mining protocol modification v1.0
+=========================================================================
+
+	      (WARNING: this is a draft NON-release version)
+
+I. Introduction
+II. Concept
+III. Specifications (RFC)
+IV. Real world scenario
+V. Contact
+
+
+I. Introduction
+---------------
+
+CryptoNight uses it's own stratum-like mining protocol. It allows miner to
+iterate through 4 bytes of nonce.
+
+
+II. Concept
+-----------
+
+Because there is no no extranonce1 and extranonce2, for NiceHash to 
+properly work with CryptoNight, we need to cut off 1 byte of nonce for 
+NiceHash, the rest - 3 bytes are for miners.
+
+Iterating through 3 bytes gives 256 * 256 * 256 ~ 16M possibilities. If a
+coin has 120 seconds block time, that gives us 16M / 120 = 140k/s, which
+means that a single miner can be as fast as 140 kH/s before things go
+wrong (miner starts making duplicate work). Since CryptoNight algorithm is
+very slow and best miners reach around 1 kH/s at max, it is safe to cut
+off 1 byte of iteration for NiceHash.
+
+Unfortunately, currently available mining software is not adjusted for
+this modification. It is a simple modification, but has to be performed, 
+else miners would get shares above target.
+
+
+III. Specifications (RFC)
+-------------------------
+
+Last byte of 4 bytes of blob intended for iterating is reserved for 
+NiceHash. Miner shall not modify it and shall combine with own 3 bytes
+that are being iterated.
+
+Standard CryptoNight:
+
+-----------------------
+...|itt|itt|itt|itt|...
+-----------------------
+
+NiceHash adjusted CryptoNight:
+
+-----------------------
+...|itt|itt|itt|NHB|...
+-----------------------
+
+itt = iterated byte
+NHB = NiceHash fixed byte
+
+
+IV. Real world scenario
+-----------------------
+
+NiceHash server sends following job to miner:
+
+{"jsonrpc":"2.0","method":"job","params":{"blob":
+"0100f2fbf1ae05e778512836d3268c95b53004002f8bf0b4e591dd6c903e3620
+12b60a6eaf64cc0000003026f3436334364896a4dce0864798a16a137b9b5dc47
+a39f00a3a75077e8f14d102","job_id":"333972526853904",
+"target":"711b0d00"}}
+
+In this case; inside blob, 4 bytes of "00000000" are replaced with
+"000000030" by NiceHash. NiceHash gives miner byte "03".
+
+Miner sends found share:
+
+{"method": "submit", "params": {"id": "843393400195054", "job_id":
+"333972526853904", "nonce": "95565503", "result": 
+"1b3f259aafb85c553198c2ad92392e816a8c030ac84305b89c932c8723bd0800"},
+"id":4}
+
+Nonce ends with byte "03" which is correct. Any other last byte
+of nonce would cause share above target.
+
+
+V. Contact
+----------
+
+www.nicehash.com
+info@nicehash.com

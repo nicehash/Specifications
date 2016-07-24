@@ -1,0 +1,365 @@
+-------------------------------------------------------------------------
+			   NiceHash presents
+=========================================================================
+	     	Ethereum stratum mining protocol v1.0.0
+=========================================================================
+revision of this document: R2
+
+I. Introduction
+II. Concept
+III. Specifications (RFC)
+IV. Real world scenario
+V. Planned improvements
+VI. Contact
+
+
+I. Introduction
+---------------
+
+Ethereum does not have official stratum protocol. It supports only
+GetWork, which is very resource hoggy as miners need to constantly
+poll pool to obtain possible new work. GetWork thus affects performance
+of miners and pools. Due to demand for more professional Ethereum
+mining, several versions of "stratum" for Ethereum emerged. These
+"stratums" utilize GetWork on server side (pool side) to obtain work,
+which would be fine, if careful considerations and precautions were
+taken when creating such protocols. But this was not done. Issues of
+these protocols are following:
+
+1. No unique data per miner/worker. Extranonce is ignored (but still
+sent). Each miner gets seedhash (which is always the same for every
+30k blocks) and headerhash (which changes every block). Then miner uses
+these two values and own nonces to generate hashes. Miners may be
+doing duplicate work (if they choose same nonces).
+
+2. Difficulty redundancy. Difficulty is sent in mining.notify message
+as a third parameter named target. This is not needed, because miners
+can calculate target hash on their own out of provided difficulty.
+
+3. Overall data redundancy. There are several fields that are not needed
+to be sent over network. Firstly; if extranonce is not used, it does not
+have to be sent. Secondly; seedhash changes every 30k blocks - there is 
+no need to send it with every mining.notify. Thirdly; as already pointed
+out in 2 - target in mining.notify is redundant as set_difficulty is
+being used. Fourthly; mining.submit actually only needs to send nonce.
+Pool needs to verify nonce for validity and will calculate hash and
+mixhash. Bandwidth usage can be easily reduced by 50% or more if removing
+all mentioned redundancies.
+
+4. There are some inconsistencies compared to original slush's stratum
+specifications. One of them are ids. Ids should increase so that the pool
+can keep track of data being received. Another thing are HEX marks '0x'
+starting with each string field. This is, again, redundant and we will
+save some bandwidth if not using them.
+
+5. No specifications, only projects with implemented solutions. This
+usually lead to several similar versions of protocol; exactly what
+happened.
+
+Our goal is to make a solid, non-redundant, bullet-proof stratum mining
+protocol for Ethereum that does not have issues pointed out above.
+
+
+II. Concept
+-----------
+
+Ethereum's GetWork gives us 3 values:
+
+{ ... "result":[
+"0x645cf20198c2f3861e947d4f67e3ab63b7b2e24dcc9095bd9123e7b33371f6cc",
+"0xabad8f99f3918bf903c6a909d9bbc0fdfa5a2f4b9cb1196175ec825c6610126c",
+"0x0000000394427b08175efa9a9eb59b9123e2969bf19bf272b20787ed022fbe6c"
+]}
+
+First value is headerhash, second value is seedhash and third value is
+target. Seedhash is used to identify DAG file, headerhash and 64 bit
+nonce value chosen by our miner give us hash, which, if below provided
+target, yield block/share.
+
+Since nonce is 64 bit (8 bytes) wide and considering very bad possible
+scenario, that Ethereum does not find a block in 5 minutes time, 8 bytes
+of nonce can support miner with speed of up to:
+
+	(2^64 / 300) / 1G ~ 61,489,147 GH/s
+
+This is a very big number so we can easily consider taking some bytes off
+for our stratum protocol.
+
+	---------------------------------------
+	| Bytes | Max supported hashing speed |
+	|   8   |        ~61,489,147.000 GH/s |
+	|   7   |           ~240,192.000 GH/s |
+	|   6   |               ~938.000 GH/s |
+	|   5   |                 ~3.665 GH/s |
+	|   4   |                 ~0.014 GH/s |
+	---------------------------------------
+
+Having only 4 bytes for nonce is not an option, since we already have
+miners capable of reaching 14 MH/s and more. Nonce width of 5 bytes
+allows max speed of 3.665 GH/s which shall be enough for quite some time,
+even if ASICs arrive.
+
+The miner needs to get seedhash, headerhash, difficulty and part of
+nonce (called extranonce) from pool. Miner chooses on it's own second
+part of the nonce (called minernonce). Extranonce glued with minernonce
+gives us 64 bit Ethereum nonce.
+
+
+III. Specifications (RFC)
+-------------------------
+
+Handshake happens after TCP connection is established from miner to the
+pool. Miner sends data first:
+
+{
+  "id": 1, 
+  "method": "mining.subscribe", 
+  "params": [ 
+    "MinerName/1.0.0", "EthereumStratum/1.0.0" 
+  ]
+}\n
+
+First parameter is miner name and version (as with standard stratum
+protocol). Second parameter must be "EthereumStratum/Version" where
+Version is version of EthereumStratum miner is using according to this
+document's version. If pool does not support this version, it may
+terminate the connection or respond back with error.
+
+Note that miner iterates ids and can start with any number. Each message
+from miner to the pool needs to have unique id for miner to properly read
+responses as pool may not process miner's messages in FIFO manner.
+
+Server replies back:
+
+{
+  "id": 1, 
+  "result": [
+    [
+      "mining.notify", 
+      "ae6812eb4cd7735a302a8a9dd95cf71f",
+      "EthereumStratum/1.0.0"
+    ],
+    "080c"
+  ],
+  "error": null
+}\n
+
+Response is almost the same as with standard stratum protocol with
+following differences; Third parameter of first parameter of result array
+is "EthereumStratum/Version"; If pool does not report this parameter or
+version is different than supported by miner, miner can expect
+compatibility issues and should terminate connection. Second parameter
+of result array is extranonce (in HEX) set by pool. There is no third
+parameter, because there is no extranonce2 (as with standard stratum).
+Extranonce may be max 3 bytes in size.
+
+Miner shall authorize during initial handshake; this is done the same way
+as in standard stratum protocol and will not be explained here in
+details.
+
+Before first job (work) is provided, pool MUST set difficulty by sending:
+
+{ 
+  "id": null, 
+  "method": "mining.set_difficulty", 
+  "params": [
+    0.5
+  ]
+}\n
+
+First item of params array is difficulty in double data type. Conversion
+between difficulty and target is done the same way as with Bitcoin; 
+difficulty of 1 is transformed to target being in HEX:
+00000000ffff0000000000000000000000000000000000000000000000000000
+
+If pool does not set difficulty before first job, then miner can assume
+difficulty 1 was being set.
+
+When difficulty is changed, miner starts using new difficulty for every
+NEXT job that arrives.
+
+If miner has subscribed to extranonce notifications (detailed explanations
+is here: https://www.nicehash.com/?p=software#devs), then pool may change 
+miner's extranonce by sending:
+
+{ 
+  "id": null, 
+  "method": "mining.set_extranonce", 
+  "params": [
+    "af4c"
+  ]
+}\n
+
+New extranonce is valid for all NEXT jobs sent by the pool.
+
+Pool informs miners about job (work) by sending:
+
+{
+  "id": null,
+  "method": "mining.notify",
+  "params": [
+    "bf0488aa",
+    "abad8f99f3918bf903c6a909d9bbc0fdfa5a2f4b9cb1196175ec825c6610126c",
+    "645cf20198c2f3861e947d4f67e3ab63b7b2e24dcc9095bd9123e7b33371f6cc",
+    true
+  ]
+}\n
+
+First parameter of params array is job ID (must be HEX number of any
+size). Second parameter is seedhash. Seedhash is sent with every job to
+support possible multipools, which may switch between coins quickly.
+Third parameter is headerhash. Last parameter is boolean cleanjobs. 
+If set to true, then miner needs to clear queue of jobs and immediatelly
+start working on new provided job, because all old jobs shares will
+result with stale share error.
+
+Miner uses seedhash to identify DAG, then tries to find share below
+target (which is created out of provided difficulty) with headerhash,
+extranonce and own minernonce.
+
+When share below target is found, miner submits it to the pool:
+
+{ 
+  "id": 244,
+  "method": "mining.submit", 
+  "params": [
+    "username",
+    "bf0488aa",
+    "6a909d9bbc0f"
+  ]
+}\n
+
+Second parameter of params array is job ID, third parameter is
+minernonce. Note in above example that minernonce is 6 bytes, because
+provided extranonce was 2 bytes. If pool provides 3 bytes extranonce,
+then minernonce must be 5 bytes.
+
+For every work submit, pool needs to respond back with standard stratum
+response:
+
+{
+  "id": 244,
+  "result": true,
+  "error": null
+}\n
+
+Or if share was not accepted (standard stratum response):
+
+{
+  "id": 244,
+  "result": false,
+  "error": [
+    -1,
+    "Job not found",
+    NULL
+  ]
+}\n
+
+
+IV. Real world scenario
+-----------------------
+
+Miner connects to the pool and sends:
+{
+  "id": 1, 
+  "method": "mining.subscribe", 
+  "params": [ 
+    "EthereumMiner/1.0.0", "EthereumStratum/1.0.0" 
+  ]
+}\n
+
+Pool responds:
+{
+  "id": 1, 
+  "result": [
+    [
+      "mining.notify", 
+      "ae6812eb4cd7735a302a8a9dd95cf71f",
+      "EthereumStratum/1.0.0"
+    ],
+    "a2eea0"
+  ],
+  "error": null
+}\n
+
+Miner then authorize:
+{
+  "id": 2, 
+  "method": "mining.authorize",
+  "params": [
+    "test", 
+    "password"
+  ]
+}\n
+
+And pool confirms:
+{
+  "id": 2,
+  "result": true,
+  "error": null
+}\n
+
+Pool sends difficulty:
+{ 
+  "id": null, 
+  "method": "mining.set_difficulty", 
+  "params": [
+    1.0
+  ]
+}\n
+
+And job:
+{ 
+  "id": null,
+  "method": "mining.notify",
+  "params": [
+    "bf0488aa",
+    "abad8f99f3918bf903c6a909d9bbc0fdfa5a2f4b9cb1196175ec825c6610126c",
+    "fc12eb20c58158071c956316cdcd12a22dd8bf126ac4aee559f0ffe4df11f279",
+    true
+  ]
+}\n
+
+After a while, miner finds share and submits it:
+{ 
+  "id": 3,
+  "method": "mining.submit", 
+  "params": [
+    "test",
+    "bf0488aa",
+    "cfae7df760"
+  ]
+}\n
+
+Response from the pool:
+{
+  "id": 3,
+  "result": true,
+  "error": null
+}\n
+
+The share was valid considering data:
+seedhash=abad8f99f3918bf903c6a909d9bbc0fdfa5a2f4b9cb1196175ec825c6610126c
+headerhash=fc12eb20c58158071c956316cdcd12a22dd8bf126ac4aee559f0ffe4df11f279
+nonce=a2eea0cfae7df760
+
+Result is share with difficulty of 1.863 which is above 1.0.
+
+
+V. Planned improvements
+-----------------------
+
+Ethereum has RPC method eth_getBlockByNumber which can return some data about
+next block that is yet to be mined. Among data is next block number (block
+height). This number could be used instead of seedhash; every miner would then
+calculate seedhash on it's own thus bandwidth usage would be reduced even more.
+
+There are plans to make eth_getBlockTemplate method. When this is made, this
+stratum protocol may get very similar to standard stratum.
+
+
+VI. Contact
+-----------
+
+www.nicehash.com
+info@nicehash.com
