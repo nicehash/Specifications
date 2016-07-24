@@ -1,0 +1,24 @@
+Uppon successful subscription to stratum with "mining.subscribe" method, client should send "mining.extranonce.subscribe" method.
+
+{"id": X, "method": "mining.extranonce.subscribe", "params": []}\n 
+
+This informs the server (pool) that client (miner) supports extranonce1 change on-the-fly without the need to reestablish 
+connection. Servers supporting this method will reply: 
+
+{"id": X, "result": true, "error": null}\n 
+
+If the server does not support method, reply will be: 
+
+{"id": X, "result": false, "error": [20, "Not supported.", null]}\n 
+
+Server may also simply ignore this subscription and return no reply or return invalid method. Some pools may return 
+incorrectly formed error message. Some pools may drop connection (in such cases, it is best to offer user a way to 
+turn extranonce subscriptions off for certain pools - via config for example). In all cases, client does not perform 
+any logic when receiving back these replies. With mining.extranonce.subscribe subscription, client should handle extranonce1 
+changes correctly. Server would send: 
+
+{"id": null, "method": "mining.set_extranonce", "params": ["08000002", 4]}\n 
+
+First parameter is string extranonce1 value, second parameter is integer value of extranonce2 size. Miner shall start using 
+new extranonce1 when new job is provided with mining.notify. Work has to be switched, even if new job has same id 
+(because extranonce1 is different). Failure to do so will cause shares above target until new job with different id is provided.
