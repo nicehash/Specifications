@@ -3,7 +3,7 @@
 =========================================================================
 	     	    Decred mining used on NiceHash
 =========================================================================
-revision of this document: R2
+revision of this document: R3
 
 I. Introduction & Concept
 II. Specifications (RFC)
@@ -44,7 +44,7 @@ Following block header is used in Decred:
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-0x00, 0x00, 0x00, 0x00
+0x00, 0x00, 0x00, 0x03 // Stake version 3
 
 There are 36 bytes in ExtraData field that can be used for random user-
 defined data.
@@ -70,7 +70,8 @@ ExtraNonce2, then block header would look like:
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // ExtraNonce2
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // remaining ExtraData
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+0x00, 0x00, 0x00, 0x00, 
+0x00, 0x00, 0x00, 0x03 // Stake version
 
 Remaining ExtraData must always be padded with nulls!
 
@@ -79,7 +80,7 @@ parameters:
 params[0] = Job ID.
 params[1] = PrevBlock (32 bytes).
 params[2] = MerkleRoot, StakeRoot,... Height, Size (together 100 bytes).
-params[3] = Unused. Set to "".
+params[3] = Stake version (4 bytes).
 params[4][] = Unused. Set to [].
 params[5] = Version.
 params[6] = Unused. Set to "".
@@ -90,7 +91,7 @@ Miner generates work for hashing by combining:
 Version (params[5]) + PrevBlock (params[1]) + MerkleRoot, StakeRoot,...
 Height, Size (params[2]) + Timestamp (params[7] + Nonce (selected by
 miner) + ExtraNonce1 (send by the pool at start) + ExtraNonce2 (selected
-by miner)
+by miner) + padding (if needed) + Stake version (params[3])
 
 
 II. Specifications (RFC)
@@ -103,6 +104,9 @@ mining on NiceHash.
 
 R2 update: It is allowed to send coinbase1 being more than 100 bytes.
 In that case, miners just take first 100 bytes and discard the rest.
+
+R3 update: Stake version added at the end of Extra data. Stake version
+is provided as third parameter in mining.notify.
 
 
 III. Contact
