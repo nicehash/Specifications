@@ -3,7 +3,7 @@
 =========================================================================
 	     	    Decred mining used on NiceHash
 =========================================================================
-revision of this document: R3
+revision of this document: R4
 
 I. Introduction & Concept
 II. Specifications (RFC)
@@ -44,7 +44,7 @@ Following block header is used in Decred:
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-0x00, 0x00, 0x00, 0x03 // Stake version 3
+0x03, 0x00, 0x00, 0x00 // Stake version 3
 
 There are 36 bytes in ExtraData field that can be used for random user-
 defined data.
@@ -71,7 +71,7 @@ ExtraNonce2, then block header would look like:
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // remaining ExtraData
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00, 
-0x00, 0x00, 0x00, 0x03 // Stake version
+0x03, 0x00, 0x00, 0x00 // Stake version
 
 Remaining ExtraData must always be padded with nulls!
 
@@ -107,6 +107,8 @@ In that case, miners just take first 100 bytes and discard the rest.
 
 R3 update: Stake version added at the end of Extra data. Stake version
 is provided as third parameter in mining.notify.
+
+R4 update: Stake version mistake fix (LE/BE).
 
 
 III. Contact
