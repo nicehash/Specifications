@@ -1,0 +1,42 @@
+-------------------------------------------------------------------------
+			   NiceHash presents
+=========================================================================
+	     	    Zhash mining used on NiceHash
+=========================================================================
+revision of this document: R1
+
+I. Introduction & Concept
+II. Specifications (RFC)
+III. Contact
+
+
+I. Introduction & Concept
+-------------------------
+
+Zhash is following Zcash stratum defined in the following page:
+https://github.com/slushpool/poclbm-zcash/wiki/Stratum-protocol-changes-for-ZCash
+
+Zhash introduces a personalized string that is used in the PoW algorithm. This 
+the document defines changes in Zcash stratum protocol with the personalized 
+string.
+
+Two additional parameters are introduced in notify message and this
+is only change according to Zcash.
+
+
+II. Specifications (RFC)
+-------------------------
+
+mining.notify()
+
+{"id": null, "method": "mining.notify", "params": ["JOB_ID", "VERSION", "PREVHASH", "MERKLEROOT", "RESERVED", "TIME", "BITS", CLEAN_JOBS, ALGO_TYPE, PERSONALIZATION]}\n
+
+ALGO_TYPE for Zhash is ALGO_TYPE is "144_5".
+PERSONALIZATION is defined by coin and is used in PoW.
+
+
+III. Contact
+-----------
+
+www.nicehash.com
+info@nicehash.com
