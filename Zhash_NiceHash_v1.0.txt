@@ -13,15 +13,14 @@ III. Contact
 I. Introduction & Concept
 -------------------------
 
-Zhash is following Zcash stratum defined in the following page:
+Zhash is following Zcash stratum protocol, defined in the following page:
 https://github.com/slushpool/poclbm-zcash/wiki/Stratum-protocol-changes-for-ZCash
 
 Zhash introduces a personalized string that is used in the PoW algorithm. This 
-the document defines changes in Zcash stratum protocol with the personalized 
+document defines changes in Zcash stratum protocol with the personalized 
 string.
 
-Two additional parameters are introduced in notify message and this
-is only change according to Zcash.
+Two additional parameters are introduced in notify message.
 
 
 II. Specifications (RFC)

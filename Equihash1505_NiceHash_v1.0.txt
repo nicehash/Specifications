@@ -1,0 +1,52 @@
+-------------------------------------------------------------------------
+               NiceHash presents
+=========================================================================
+                 Zhash mining used on NiceHash
+=========================================================================
+revision of this document: R1
+
+I. Introduction & Concept
+II. Specifications (RFC)
+III. Contact
+
+
+I. Introduction & Concept
+-------------------------
+
+Equihash1505 support beam stratum protocol defined here:
+https://github.com/BeamMW/beam/wiki/Beam-mining-protocol-API-%28Stratum%29
+
+In this protocol mechanism for switching jobs is missing, therefore an extension 
+of this protocol is defined. The modification is done in job message.
+
+An additional change to the definition is made for "nonceprefix" parameter in 
+login response.
+
+
+II. Specifications (RFC)
+-------------------------
+
+a. Job message 
+
+Each job message contains additional parameter "nonceprefix". It follows
+the same rules as "nonceprefix" in the login response.
+
+Example
+{
+    "method" : "login", 
+    "api_key": "skjdb7343636gucgjdjgd",
+    "id":"login",
+    "jsonrpc":"2.0" ,
+    "nonceprefix":"ab4e3a"
+}
+
+b. Nonceprefix
+
+Allowed is a prefix from 1 to 7 bytes.
+
+
+III. Contact
+-----------
+
+www.nicehash.com
+info@nicehash.com
