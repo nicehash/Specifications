@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------
                NiceHash presents
 =========================================================================
-                 Zhash mining used on NiceHash
+                 Beam mining used on NiceHash
 =========================================================================
 revision of this document: R1
 
@@ -13,7 +13,7 @@ III. Contact
 I. Introduction & Concept
 -------------------------
 
-Equihash1505 support beam stratum protocol defined here:
+Beam stratum protocol is defined here:
 https://github.com/BeamMW/beam/wiki/Beam-mining-protocol-API-%28Stratum%29
 
 In this protocol mechanism for switching jobs is missing, therefore an extension 
