@@ -70,7 +70,7 @@ IV. Real world scenario
 NiceHash server sends following job to miner:
 
 {  
-   "id":"Stratum",
+   "id":123,
    "jsonrpc":"2.0",
    "method":"job",
    "params":{  
