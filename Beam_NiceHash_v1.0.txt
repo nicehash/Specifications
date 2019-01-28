@@ -38,7 +38,7 @@ Example
     "input":"636b90cc38bc7a347f074d9ca97c3a2158330f6844f8f52075a38a15ab483223",
     "jsonrpc":"2.0",
     "method":"job",
-	"nonceprefix":"ab4e3a"
+    "nonceprefix":"ab4e3a"
 }
 
 
