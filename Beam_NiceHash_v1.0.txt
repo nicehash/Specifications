@@ -44,7 +44,7 @@ Example
 
 b. Nonceprefix
 
-Allowed is a prefix from 1 to 7 bytes.
+Allowed is a prefix from 1 to 6 bytes.
 
 
 III. Contact
