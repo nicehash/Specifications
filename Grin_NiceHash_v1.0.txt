@@ -48,16 +48,14 @@ else miners would get shares above target.
 III. Specifications (RFC)
 -------------------------
 
-Nonce size for miner is determinted according to the size of 'pre_pow'
-parameter passed in by the pool (server) when sending job. The default
-'pre_pow' size is 238 bytes. If the pool sends 'pre_pow' with size 240 bytes,
-then miner can iterate through 6 bytes of nonce only, because 'pre_pow'
-and nonce are concatenated to form 246 bytes long input data. Pool should
-leave at least 4 bytes for miner to iterate through.
+Nonce size for miner is determinted according to the new parameter called
+'xn' passed in by the pool (server) when sending job. 'xn' is hex string
+and must not be larger than 4 bytes (8 hex digits). 'xn' stands for
+extranonce and is concatenated with miner's nonce.
 
-Method 'job' also has additional parameter 'cleanjob'. If set to true,
-all previous jobs should be disregarded and miner should start working
-on new job immediately.
+Method 'job' also has additional parameter 'cleanjob' (boolean). If set 
+to true, all previous jobs should be disregarded and miner should start
+working on a new job immediately.
 
 Job ID being '0' have no effect on clearing old jobs.
 
@@ -77,14 +75,15 @@ NiceHash server sends following job to miner:
       "difficulty":1,
       "height":16375,
       "job_id":5,
-      "pre_pow":"00010000000000003ff723bc8c987b0c594794a0487e52260c5343288749c7e288de95a80afa558c5fb8000000005b51f15f00000000003cadef6a45edf92d2520bf45cbd4f36b5ef283c53d8266bbe9aa1b8daaa1458ce5578fcb0978b3995dd00e3bfc5a9277190bb9407a30d66aec26ff55a2b50214b22cdc1f3894f27374f568b2fe94d857b6b3808124888dd5eff7e8de7e451ac805a4ebd6551fa7a529a1b9f35f761719ed41bfef6ab081defc45a64a374dfd8321feac083741f29207b044071d93904986fa322df610e210c543c2f95522c9bdaef5f598000000000000c184000000000000a0cf0001",
+      "pre_pow":"00010000000000003ff723bc8c987b0c594794a0487e52260c5343288749c7e288de95a80afa558c5fb8000000005b51f15f00000000003cadef6a45edf92d2520bf45cbd4f36b5ef283c53d8266bbe9aa1b8daaa1458ce5578fcb0978b3995dd00e3bfc5a9277190bb9407a30d66aec26ff55a2b50214b22cdc1f3894f27374f568b2fe94d857b6b3808124888dd5eff7e8de7e451ac805a4ebd6551fa7a529a1b9f35f761719ed41bfef6ab081defc45a64a374dfd8321feac083741f29207b044071d93904986fa322df610e210c543c2f95522c9bdaef5f598000000000000c184000000000000a0cf",
+      "xn":"0001"
       "cleanjob":false
    }
 }
 
-In this case; inside 'pre_pow' there are 2 extra bytes at the end
-'0001' which form pool (server) side extranonce so miners never work
-on same input data.
+In this case, 'xn' tells miner that miner's nonce is 6 bytes, because
+'xn' is 2 bytes. For this particular input data, miner should only iterate
+last 6 bytes of nonce and keep first two bytes fixed at '0001'.
 
 
 V. Contact
