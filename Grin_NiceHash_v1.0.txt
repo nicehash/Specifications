@@ -1,0 +1,93 @@
+-------------------------------------------------------------------------
+			   NiceHash presents
+=========================================================================
+		Grin mining protocol modification v1.0
+=========================================================================
+
+	      (WARNING: this is a draft NON-release version)
+
+I. Introduction
+II. Concept
+III. Specifications (RFC)
+IV. Real world scenario
+V. Contact
+
+
+I. Introduction
+---------------
+
+Grin mining protocol uses it's own stratum-like mining protocol. It allows miner to
+iterate through 8 bytes of nonce, but as per official specification found at 
+
+https://github.com/mimblewimble/grin/blob/master/doc/stratum.md
+
+it is stated that "Miners SHOULD randomize the job nonce before starting", which leads
+to possibilities that miners are working on the same input data which would result in
+duplicated work.
+
+Another issue with official protocol is that job id '0' invalidates all previous jobs.
+In case of two sequential job id '0' it is impossible to know for sure to which job
+submitted share belongs.
+
+Method 'getjobtemplate' is not needed. Pool (server) will send the job to the miner
+as soon as miner has logged in.
+
+
+II. Concept
+-----------
+
+Because there is no no extranonce1 and extranonce2, for NiceHash to 
+properly work with Grin, we need to cut off some bytes (at least 1) of 
+nonce for NiceHash, the rest (max 7) are for miners.
+
+Unfortunately, currently available mining software is not adjusted for
+this modification. It is a simple modification, but has to be performed, 
+else miners would get shares above target.
+
+
+III. Specifications (RFC)
+-------------------------
+
+Nonce size for miner is determinted according to the new parameter called
+'xn' passed in by the pool (server) when sending job. 'xn' is hex string
+and must not be larger than 4 bytes (8 hex digits). 'xn' stands for
+extranonce and is concatenated with miner's nonce.
+
+Method 'job' also has additional parameter 'cleanjob' (boolean). If set 
+to true, all previous jobs should be disregarded and miner should start
+working on a new job immediately.
+
+Job ID being '0' have no effect on clearing old jobs.
+
+Method 'getjobtemplate' is not needed and will be ignored if requested.
+
+
+IV. Real world scenario
+-----------------------
+
+NiceHash server sends following job to miner:
+
+{  
+   "id":"123",
+   "jsonrpc":"2.0",
+   "method":"job",
+   "params":{  
+      "difficulty":1,
+      "height":16375,
+      "job_id":5,
+      "pre_pow":"00010000000000003ff723bc8c987b0c594794a0487e52260c5343288749c7e288de95a80afa558c5fb8000000005b51f15f00000000003cadef6a45edf92d2520bf45cbd4f36b5ef283c53d8266bbe9aa1b8daaa1458ce5578fcb0978b3995dd00e3bfc5a9277190bb9407a30d66aec26ff55a2b50214b22cdc1f3894f27374f568b2fe94d857b6b3808124888dd5eff7e8de7e451ac805a4ebd6551fa7a529a1b9f35f761719ed41bfef6ab081defc45a64a374dfd8321feac083741f29207b044071d93904986fa322df610e210c543c2f95522c9bdaef5f598000000000000c184000000000000a0cf",
+      "xn":"0001",
+      "cleanjob":false
+   }
+}
+
+In this case, 'xn' tells miner that miner's nonce is 6 bytes, because
+'xn' is 2 bytes. For this particular input data, miner should only iterate
+last 6 bytes of nonce and keep first two bytes fixed at '0001'.
+
+
+V. Contact
+----------
+
+www.nicehash.com
+info@nicehash.com
