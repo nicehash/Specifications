@@ -13,8 +13,13 @@ III. Contact
 I. Introduction & Concept
 -------------------------
 
-Beam stratum protocol is defined here:
+This specification is for mining software that is connecting to the Nicehash platform. 
+
+The mining pools must follow official specification, defined here: 
+
 https://github.com/BeamMW/beam/wiki/Beam-mining-protocol-API-%28Stratum%29
+
+and not this specification.
 
 In this protocol mechanism for switching jobs is missing, therefore an extension 
 of this protocol is defined. The modification is done in job message.

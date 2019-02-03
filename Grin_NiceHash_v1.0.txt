@@ -16,6 +16,11 @@ V. Contact
 I. Introduction
 ---------------
 
+This specification concerns mining software that is connecting to the Nicehash 
+platform. 
+
+Mining pools must follow official specifications and not this specification.
+
 Grin mining protocol uses it's own stratum-like mining protocol. It allows miner to
 iterate through 8 bytes of nonce, but as per official specification found at 
 
