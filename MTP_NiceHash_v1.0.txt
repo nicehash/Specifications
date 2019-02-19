@@ -1,0 +1,66 @@
+-------------------------------------------------------------------------
+			   NiceHash presents
+=========================================================================
+		MTP mining protocol modification v1.0
+=========================================================================
+
+	      (WARNING: this is a draft NON-release version)
+
+I. Introduction
+II. Specifications (RFC)
+V. Contact
+
+
+I. Introduction
+---------------
+
+This specification concerns mining software that is connecting to the Nicehash 
+platform. 
+
+Mining pools must follow official specifications and not this specification.
+
+https://github.com/MintPond/mtp-stratum-mining-protocol
+
+MTP mining protocol uses stratum mining protocol in binary format.  It allows miner
+to iterate through 8 bytes of extranonce2 and there is no parameter in 
+protocol where size of xnonce2 is defined, so here is defined rule for extranonce2
+size.
+
+According to specification 8 bytes of extranonce1 parameter should be send, but Nicehash
+platform send up to 10 bytes of extranonce1. 
+
+In the mtp protocol specification there is no definition of mining.extranonce.subscribe.
+This is highly recommended that miners should include it, to minimize time when
+job is switch.
+
+
+II. Specifications
+-----------
+
+
+1. Extranonce2 size
+
+Extranonce2 size must be calculated from extranonce1 size, otherwise shares will 
+be rejected.
+
+extranonce2_size = 16 - extranonce1_size
+
+2. Extranonce1 size
+Extranonce from Nicehash platform will be at up to 10 bytes long.
+
+3. mining.extranonce.subscribe
+
+This message is defined here: https://github.com/nicehash/Specifications/blob/master/NiceHash_extranonce_subscribe_extension.txt
+
+For MTP it has to be converted in BOS format: 
+https://github.com/MintPond/node-bos/blob/master/FORMAT.md
+
+Example of mining.subscribe.extranonce:
+380000000f030269640601066d6574686f640c1b6d696e696e672e65787472616e6f6e63652e73756273637269626506706172616d730e00
+
+
+V. Contact
+----------
+
+www.nicehash.com
+info@nicehash.com

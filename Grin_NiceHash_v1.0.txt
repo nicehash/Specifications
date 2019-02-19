@@ -4,8 +4,6 @@
 		Grin mining protocol modification v1.0
 =========================================================================
 
-	      (WARNING: this is a draft NON-release version)
-
 I. Introduction
 II. Concept
 III. Specifications (RFC)
