@@ -1,0 +1,78 @@
+-------------------------------------------------------------------------
+			   NiceHash presents
+=========================================================================
+		Octopus mining protocol modification v1.0
+=========================================================================
+
+	      (WARNING: this is a draft NON-release version)
+
+I. Introduction
+II. Concept
+III. Specifications (RFC)
+IV. Real world scenario
+V. Contact
+
+
+I. Introduction
+---------------
+
+This specification concerns mining software that is connecting to the Nicehash 
+platform. 
+
+Mining pools must follow official specifications and not this specification.
+
+Octopus mining protocol uses it's own stratum-like mining protocol. 
+Miner iterate through 8 bytes of nonce, but as per official specification found at 
+
+https://github.com/Conflux-Chain/conflux-doc/blob/master/docs/stratum.md
+
+there is no extranonce1 definition, which leads to possibility that miners are working 
+on the same input data which would result in duplicated work.
+
+II. Concept
+-----------
+
+Because there is no no extranonce1 and extranonce2, for NiceHash to 
+properly work with Octopus, we need to cut off some bytes (at least 1) of 
+nonce for NiceHash, the rest (max 7) are for miners.
+
+Unfortunately, currently available mining software is not adjusted for
+this modification. It is a simple modification, but has to be performed, 
+else miners would get shares above target.
+
+
+III. Specifications (RFC)
+-------------------------
+
+Nonce size for miner is determinted according to the new parameter called
+'xn' passed in by the pool (server) when sending job. 'xn' is hex string
+and must not be larger than 2 bytes (4 hex digits). 'xn' stands for
+extranonce.
+
+IV. Real world scenario
+-----------------------
+
+NiceHash server sends following job to miner:
+
+{
+  "id": 0,
+  "method": "mining.notify",
+  "params": [
+    "2a1730c8",
+    "1641369",
+    "0xb314e92a1730c832ad4bb85283e6792f3a8ee9fd596e3bcfe38ec426cf3d3ff2",
+    "0x044b82fa09b5a52cb98b405447c4a98187eebb22f008d5d64f9c394ae9"
+  ],
+  "xn:": "01ab"
+}
+
+In this case, 'xn' tells miner that miner's nonce is 6 bytes, because
+'xn' is 2 bytes. For this particular input data, miner should only iterate
+last 6 bytes of nonce and keep first two bytes fixed at '01ab'.
+
+
+V. Contact
+----------
+
+www.nicehash.com
+info@nicehash.com
