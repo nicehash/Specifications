@@ -75,6 +75,7 @@ When solution is found, miner responds with submit:
 
 {
   "id": 2,
+  "jsonrpc": "2.0",
   "method": "mining.submit",
   "params": [
     "1LXeP87tRaoFk58i6hyJUSmoerL13SzUEu",
