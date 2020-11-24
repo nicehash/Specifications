@@ -56,19 +56,35 @@ NiceHash server sends following job to miner:
 
 {
   "id": 0,
+  "jsonrpc": "2.0",
   "method": "mining.notify",
   "params": [
-    "2a1730c8",
-    "1641369",
-    "0xb314e92a1730c832ad4bb85283e6792f3a8ee9fd596e3bcfe38ec426cf3d3ff2",
-    "0x044b82fa09b5a52cb98b405447c4a98187eebb22f008d5d64f9c394ae9"
+    "0000000086cef644",
+    "2302785",
+    "0x817ded7e4677f7fd952632a7e37a0e969863b286fb1b14a7ff20bc62e832a8e2",
+    "0x55e63b88c2000000000000000000000000000000000000000000000000"
   ],
-  "xn:": "01ab"
+  "xn": "30"
 }
 
-In this case, 'xn' tells miner that miner's nonce is 6 bytes, because
-'xn' is 2 bytes. For this particular input data, miner should only iterate
-last 6 bytes of nonce and keep first two bytes fixed at '01ab'.
+In this case, 'xn' tells miner that miner's nonce is 7 bytes, because
+'xn' is 1 byte. For this particular input data, miner should only iterate
+last 7 bytes of nonce and keep first byte fixed at '30'.
+
+When solution is found, miner responds with submit:
+
+{
+  "id": 2,
+  "method": "mining.submit",
+  "params": [
+    "1LXeP87tRaoFk58i6hyJUSmoerL13SzUEu",
+    "0000000086cef644",
+    "0x30000000002978da",
+    "0x817ded7e4677f7fd952632a7e37a0e969863b286fb1b14a7ff20bc62e832a8e2"
+  ]
+}
+
+In this case first byte of nonce "0x30000000002978da" is predefined 'xn' byte '30'.
 
 
 V. Contact
