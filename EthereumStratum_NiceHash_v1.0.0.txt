@@ -151,7 +151,7 @@ version is different than supported by miner, miner can expect
 compatibility issues and should terminate connection. Second parameter
 of result array is extranonce (in HEX) set by pool. There is no third
 parameter, because there is no extranonce2 (as with standard stratum).
-Extranonce may be max 3 bytes in size.
+Extranonce may be max 2 bytes in size.
 
 Miner shall authorize during initial handshake; this is done the same way
 as in standard stratum protocol and will not be explained here in
