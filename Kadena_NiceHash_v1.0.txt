@@ -1,0 +1,77 @@
+-------------------------------------------------------------------------
+			   NiceHash presents
+=========================================================================
+		Kadena mining protocol modification v1.0
+=========================================================================
+
+I. Introduction & Concept
+II. Specifications (RFC)
+III. Contact
+
+
+I. Introduction & Concept
+-------------------------
+
+This specification is placing additional restriction for nonce length and 
+job frequency provided by pools.
+
+II. Specifications (RFC)
+-------------------------
+
+a. Subscribe response
+
+In "mining.subscribe" pool provides fixed "nonceprefix" miners should use when generating
+randomness.
+
+Example:
+-> subscribe
+{
+    "id": 1,
+    "method": "mining.subscribe",
+    "params": [
+        "NiceHash/1.0.0"
+    ]
+}
+<- response
+{
+    "id": 1,
+    "result": [
+        null,
+        "a331",
+        6
+    ],
+    "error": null
+}
+
+Response provides nonceprefix "a331" which is 2 bytes long. To prevent duplicate shares
+and properly distribute work load, NiceHash adds additional byte for the miners, which
+sets nonceprefix to 3 bytes.
+
+b. Nonceprefix
+
+Since nonce is 64 bit (8 bytes) wide and considering very bad possible scenario, that miner
+does not find a block in 1.5 seconds time, 8 bytes of nonce can support miner with speed of up to:
+
+	( 2^64 / 1.5 ) / 1T ~= 12'297'829.38 TH/s 
+
+This is a very big number so we can easily consider taking some bytes off for our stratum protocol.
+
+	---------------------------------------
+	| Bytes | Max supported hashing speed |
+	|   8   |         ~12'297'829.38 TH/s |
+	|   7   |             ~48'038.39 TH/s |
+	|   6   |                ~187.64 TH/s |
+	|   5   |                  ~0.73 TH/s |
+	---------------------------------------
+
+Having only 6 bytes for nonce is not an option, since we have ASICs capable of reaching 100 TH/s and more.
+
+Allowed nonceprefix provided by the pool is 0 to 1 bytes, with additional constraint that jobs must be 
+sent at least once per second. 
+
+
+III. Contact
+-----------
+
+www.nicehash.com
+info@nicehash.com
