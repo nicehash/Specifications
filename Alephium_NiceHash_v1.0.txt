@@ -1,0 +1,48 @@
+-------------------------------------------------------------------------
+			   NiceHash presents
+=========================================================================
+		Alephium mining protocol modification v1.0
+=========================================================================
+
+I. Introduction & Concept
+II. Specifications (RFC)
+III. Contact
+
+
+I. Introduction & Concept
+-------------------------
+
+This specification is placing additional restriction for nonce length
+provided by the pools.
+
+
+II. Specifications (RFC)
+-------------------------
+
+a. Subscribe response
+
+Pool provides fixed "nonceprefix" miners should use when rolling
+nonce on login with "mining.set_extranonce" message. 
+
+Example:
+{"id":null,"method":"mining.set_extranonce","params":["515a"]}
+
+
+Response provides nonceprefix "515a" which is 2 bytes long. To prevent duplicate shares
+and properly distribute work load, NiceHash adds at least additional byte for the miners, which
+sets nonceprefix to 3 bytes.
+
+b. Nonceprefix
+
+While nonce is 192 bit (24 bytes) wide, ASICs are hardcoded in hardware to only consider the first 
+two (2) bytes of pool nonceprefix, while the rest are freely rolled and overwritten by the miner. 
+Setting the nonceprefix to 3 or more bytes is therefore not an option.
+
+Thus, the allowed nonceprefix provided by the pool is limited to either 0 or 1 bytes.
+If set to 0 bytes, the "mining.set_extranonce" message can be skipped.
+
+III. Contact
+-----------
+
+www.nicehash.com
+info@nicehash.com
