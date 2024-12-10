@@ -1,0 +1,77 @@
+-------------------------------------------------------------------------
+			   NiceHash presents
+=========================================================================
+		XelisHashV2 mining protocol modification v1.0
+=========================================================================
+
+I. Introduction & Concept
+II. Specifications (RFC)
+III. Contact
+
+
+I. Introduction & Concept
+-------------------------
+
+This specification is placing additional restriction for nonce length provided by the pools.
+
+
+II. Specifications (RFC)
+-------------------------
+
+To prevent duplicate shares and properly distribute work load, NiceHash adds additional bytes
+to nonceprefix for the miners, which sets nonceprefix to 32 bytes. Pools must provide
+nonceprefix of length 31 bytes or less.
+
+Subscribe response
+
+In "mining.subscribe" response, pool provides fixed "nonceprefix" miners must use when generating nonce.
+
+Example:
+-> subscribe
+{
+    "id": 1,
+    "method": "mining.subscribe",
+    "params": [
+        "NiceHash/1.0.0"
+    ]
+}
+<- subscribe response
+{
+    "id": 1,
+    "error": null,
+    "result": [
+        "",
+        "69d5a9c1bb2b2f6784e626967375bd6e1ea7e6f1f9832f1400467a0982de",
+        30,
+        "a8eba492f6bfd72ee3bd0587161aff6a5f05b83b8f4fcb715cb0976f55673a03"
+    ]
+}
+
+Example subscribe response provides nonceprefix "69d5a9c1bb2b2f6784e626967375bd6e1ea7e6f1f9832f1400467a0982de" 
+which is 30 bytes long. NiceHash adds additional bytes prior sending nonceprefix to the miners to 
+match expected 32 bytes long nonceprefix.
+
+Submit
+
+In "mining.subscribe" miner ( NiceHash ) provides nonce.
+
+Example:
+-> submit
+{
+    "id": 3,
+    "method": "mining.submit",
+    "params": [
+        "xel:ys4peuzztwl67rzhsdu0yxfzwcfmgt85uu53hycpeeary7n8qvysqmxznt0",
+        "1",
+        "ae9f0100000000002791"
+    ]
+}
+
+Example submit provides 10 byte nonce. Sum of nonceprefix and submit nonce size is always 40 bytes.
+
+
+III. Contact
+-----------
+
+www.nicehash.com
+info@nicehash.com
