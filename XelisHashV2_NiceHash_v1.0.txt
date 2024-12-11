@@ -19,14 +19,10 @@ II. Specifications (RFC)
 -------------------------
 
 To prevent duplicate shares and properly distribute work load, NiceHash adds additional bytes
-to nonceprefix for the miners, which sets nonceprefix to 32 bytes. Pools must provide
+to nonceprefix for the miners, which sets nonceprefix to the expected 32 bytes. Pools must provide
 nonceprefix of length 31 bytes or less.
 
-Subscribe response
-
-In "mining.subscribe" response, pool provides fixed "nonceprefix" miners must use when generating nonce.
-
-Example:
+Pool traffic:
 -> subscribe
 {
     "id": 1,
@@ -41,34 +37,58 @@ Example:
     "error": null,
     "result": [
         "",
-        "69d5a9c1bb2b2f6784e626967375bd6e1ea7e6f1f9832f1400467a0982de",
+        "30c874c31a2f2fbb02dbcb2db0b7a41641b3be88abb9b7f33d6bcc8839ca",
         30,
         "a8eba492f6bfd72ee3bd0587161aff6a5f05b83b8f4fcb715cb0976f55673a03"
     ]
 }
-
-Example subscribe response provides nonceprefix "69d5a9c1bb2b2f6784e626967375bd6e1ea7e6f1f9832f1400467a0982de" 
-which is 30 bytes long. NiceHash adds additional bytes prior sending nonceprefix to the miners to 
-match expected 32 bytes long nonceprefix.
-
-Submit
-
-In "mining.subscribe" miner ( NiceHash ) provides nonce.
-
-Example:
 -> submit
 {
     "id": 3,
     "method": "mining.submit",
     "params": [
         "xel:ys4peuzztwl67rzhsdu0yxfzwcfmgt85uu53hycpeeary7n8qvysqmxznt0",
-        "1",
-        "ae9f0100000000002791"
+        "7",
+        "13639ca53f21df75b94a"
     ]
 }
 
-Example submit provides 10 byte nonce. Sum of nonceprefix and submit nonce size is always 40 bytes.
+Miner traffic:
+-> subscribe
+{
+    "id": 0,
+    "method": "mining.subscribe",
+    "params": [
+        "Rigel/1.19.3-nicehash"
+    ]
+}
+<- subscribe response
+{
+    "id": 0,
+    "error": null,
+    "result": [
+        "47dee1473361f8d2677cdbd7e4eb8413",
+        "b94a30c874c31a2f2fbb02dbcb2db0b7a41641b3be88abb9b7f33d6bcc8839ca",
+        32,
+        "a8eba492f6bfd72ee3bd0587161aff6a5f05b83b8f4fcb715cb0976f55673a03"
+    ]
+}
+-> submit
+{
+    "id": 36,
+    "method": "mining.submit",
+    "params": [
+        "",
+        "00000000ec3f3fa7",
+        "13639ca53f21df75"
+    ]
+}
 
+In the provided traffic example, the pool provides nonceprefix "30c874c31a2f2fbb02dbcb2db0b7a41641b3be88abb9b7f33d6bcc8839ca"
+which is 30 bytes long. NiceHash prepends additional bytes, "b94a", prior sending nonceprefix to the miners to 
+match the expected 32 bytes long nonceprefix. Miner submits nonce "13639ca53f21df75" which is 8 bytes long. Prior sending submit 
+to the pool, NiceHash appends additional bytes, "b94a", to the submit nonce, making it 10 bytes long. The sum of pool nonceprefix 
+and pool submit nonce size is always 40 bytes.
 
 III. Contact
 -----------
