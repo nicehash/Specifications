@@ -1,0 +1,66 @@
+-------------------------------------------------------------------------
+			        NiceHash presents
+=========================================================================
+		zkSNARK mining protocol modification v1.0
+=========================================================================
+
+I. Introduction & Concept
+II. Specifications (RFC)
+III. Contact
+
+
+I. Introduction & Concept
+-------------------------
+
+This specification is placing additional restriction for nonce length provided by the pools.
+
+
+II. Specifications (RFC)
+-------------------------
+
+To prevent duplicate shares and properly distribute work load, NiceHash adds additional byte
+to nonce prefix for the miners, which sets nonce prefix to the expected 2 bytes. Pools MUST
+provide nonce prefix of length exactly 1 byte to be compatible with NiceHash.
+
+Pool traffic:
+-> subscribe
+{
+    "id":1,
+    "jsonrpc":"2.0",
+    "method":"mining.subscribe",
+    "params":["NiceHash","1.0.0"]
+}
+<- subscribe response
+{
+    "id":1,
+    "jsonrpc":"2.0",
+    "result":[null,"7c",1],
+    "error":null
+}
+
+Miner traffic:
+-> subscribe
+{
+    "id": 0,
+    "jsonrpc":"2.0",
+    "method": "mining.subscribe",
+    "params": ["iceriver/1.0.0", "1.0.0"]
+}
+<- subscribe response
+{
+    "id":0,
+    "jsonrpc":"2.0",
+    "error":null,
+    "result":[null,"7cb1",2]
+}
+
+
+In the provided traffic example, the pool provides nonce prefix "7c" which is 1 bytes long.
+NiceHash prepends additional 1 byte, "b1", prior sending nonce prefix to the miners to match
+the expected 2 bytes long nonce prefix.
+
+III. Contact
+-----------
+
+www.nicehash.com
+info@nicehash.com
